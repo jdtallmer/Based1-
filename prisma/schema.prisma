@@ -1,0 +1,58 @@
+// Local dev uses SQLite for zero-setup running. Swap provider to "postgresql"
+// and set DATABASE_URL to a Neon/Supabase connection string for deployment.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum ApplicationStatus {
+  APPLIED
+  RESPONDED
+  INTERVIEW_SCHEDULED
+  OFFER
+  REJECTED
+  GHOSTED
+}
+
+model Application {
+  id           String            @id @default(cuid())
+  company      String
+  title        String
+  link         String
+  status       ApplicationStatus @default(APPLIED)
+  appliedDate  DateTime          @default(now())
+  lastActivity DateTime          @default(now())
+  archived     Boolean           @default(false)
+  notes        String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+}
+
+model NewRole {
+  id         String   @id @default(cuid())
+  company    String
+  title      String
+  postedDate DateTime
+  link       String
+  jobId      String?
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model WatchlistCompany {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Settings {
+  id           String  @id @default("singleton")
+  resumeText   String?
+  linkedinUrl  String?
+  resumeDocUrl String?
+}
