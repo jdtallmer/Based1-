@@ -26,8 +26,8 @@ or Gmail parsing yet); see [Roadmap](#roadmap) below.
 
 ```bash
 npm install
-cp .env.example .env   # then edit APP_PASSWORD, SESSION_SECRET, ANTHROPIC_API_KEY
-npx prisma migrate dev
+cp .env.example .env   # then fill in DATABASE_URL, DIRECT_URL, APP_PASSWORD, SESSION_SECRET, ANTHROPIC_API_KEY
+npx prisma migrate deploy   # applies the committed migration to your Supabase database
 npm run dev
 ```
 
@@ -36,32 +36,31 @@ in `.env` as `APP_PASSWORD`.
 
 ## Environment variables
 
-See `.env.example`. Locally, the app uses a zero-setup SQLite file (`prisma/dev.db`, not
-committed).
+See `.env.example`. The app uses a hosted Postgres database (Supabase) both locally and
+in production — there's no local-only database file.
 
 | Variable | Purpose |
 | --- | --- |
-| `DATABASE_URL` | `file:./dev.db` locally. For deployment, point this at a hosted Postgres instance (e.g. [Neon](https://neon.tech) or [Supabase](https://supabase.com)) — see below. |
+| `DATABASE_URL` | Supabase's **pooled** connection string (port 6543, `?pgbouncer=true`). Used by the running app. |
+| `DIRECT_URL` | Supabase's **direct** connection string (port 5432). Used only by `prisma migrate`, which needs a non-pooled connection. |
 | `APP_PASSWORD` | The password required to log into the dashboard. |
 | `SESSION_SECRET` | Random 32+ character string used to encrypt the login session cookie. |
 | `ANTHROPIC_API_KEY` | Needed for the Cover Letter Generator. Get one at [console.anthropic.com](https://console.anthropic.com). |
 | `ANTHROPIC_MODEL` | Optional, defaults to `claude-sonnet-5`. |
 
-## Deploying (Postgres + Vercel)
+Get both Postgres URLs from your Supabase project: **Project Settings → Database →
+Connect**, then choose the "Prisma" tab, which gives you both pre-formatted.
 
-This was built against SQLite for zero-setup local dev. To deploy:
+## Deploying (Vercel)
 
-1. Create a free Postgres database (Neon or Supabase both have a free tier).
-2. In `prisma/schema.prisma`, change the datasource provider from `sqlite` to
-   `postgresql`.
-3. Set `DATABASE_URL` in your hosting provider's environment variables to the Postgres
-   connection string.
-4. Run `npx prisma migrate deploy` against that database (Prisma will need a fresh
-   migration since SQLite and Postgres migrations aren't interchangeable — delete
-   `prisma/migrations` and run `npx prisma migrate dev --name init` once against the
-   Postgres URL locally, then commit the new migration).
-5. Deploy to [Vercel](https://vercel.com/new) (or any Node host), setting the same env
-   vars from `.env.example` in the project's environment settings.
+1. Push this repo to GitHub (already done) and import it into
+   [Vercel](https://vercel.com/new).
+2. In the Vercel project's environment variables, set everything from `.env.example`
+   (`DATABASE_URL`, `DIRECT_URL`, `APP_PASSWORD`, `SESSION_SECRET`, `ANTHROPIC_API_KEY`)
+   using your Supabase connection strings.
+3. Run `npx prisma migrate deploy` once against the Supabase database (either locally
+   with the production `.env`, or as a one-off via Vercel's CLI) to create the tables.
+4. Deploy. Every subsequent push to the connected branch redeploys automatically.
 
 ## Known dev-dependency advisories
 

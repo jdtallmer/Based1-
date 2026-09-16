@@ -1,12 +1,14 @@
-// Local dev uses SQLite for zero-setup running. Swap provider to "postgresql"
-// and set DATABASE_URL to a Neon/Supabase connection string for deployment.
+// Hosted Postgres (Supabase). DATABASE_URL is the pooled connection (used by
+// the running app); DIRECT_URL is the direct connection (used by `prisma
+// migrate`, which pooled connections don't support). See README.
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum ApplicationStatus {
