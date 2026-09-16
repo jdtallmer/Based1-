@@ -27,7 +27,7 @@ or Gmail parsing yet); see [Roadmap](#roadmap) below.
 ```bash
 npm install
 cp .env.example .env   # then fill in DATABASE_URL, DIRECT_URL, APP_PASSWORD, SESSION_SECRET, ANTHROPIC_API_KEY
-npx prisma migrate dev
+npx prisma migrate deploy   # applies the committed migration to your Supabase database
 npm run dev
 ```
 
